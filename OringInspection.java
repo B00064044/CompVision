@@ -67,8 +67,7 @@ public class OringInspection
       while (true) 
       {
     	  String imageName = "C:\\Users\\lialka\\Desktop\\CompVision\\Rings image\\Oring" + (i%15) + ".jpg";
-    	  System.out.println(imageName);
-          //img = Highgui.imread("C:\\Users\\lialka\\Desktop\\CompVision\\Rings image" + (i%15) + ".jpg");
+    	  System.out.println(imageName);          
           img = Highgui.imread(imageName);
           int [] h = hist(img);
           
@@ -81,9 +80,12 @@ public class OringInspection
           
           drawHist(histim,h);
           
+          int threshold = calcThreshold(h);
+          
           //threshold the image
-          int t=120;
-          threshold(img,t);
+          int t=120;  // not used any longer as we calculate threshold just above
+          
+          threshold(img,threshold);
           //openCV version
           //Imgproc.threshold(img, img, 100, 255, Imgproc.THRESH_BINARY);
           //convert to colour so we can put text into the image using whatever colour we want!
@@ -104,7 +106,19 @@ public class OringInspection
       }
    }
    
-   public static void threshold(Mat img, int t)
+   /**
+    * Calculates threshold from histogram
+    * @param h
+    * @return
+    */
+   private static int calcThreshold(int[] h) {
+	   
+	   
+	
+	return 120;
+}
+
+public static void threshold(Mat img, int t)
    {
 	   /* threshold the image (img), note here that we need to do an
 	    * & with 0xff. this is because Java uses signed two's complement
@@ -144,7 +158,9 @@ public class OringInspection
 	   {
 		   if(hist[i] > max)
 			   max = hist[i];
+		   System.out.print(hist[i]  + " ");
 	   }
+	   System.out.println();
 	   int scale = max/256;
 	   for(int i=0;i<hist.length-1;i++)
 	   {
