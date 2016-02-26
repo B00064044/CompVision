@@ -23,9 +23,11 @@ import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
-public class OringInspection
-{  
-   
+public class OringInspection {  
+	
+	final static int ROW = 256;
+	final static int COLUMN = 256;
+	
    public static void main( String[] args )
    {
       System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
@@ -56,13 +58,11 @@ public class OringInspection
       //String streamAddr = "http://c-cam.uchicago.edu/mjpg/video.mjpg"; //try in browser to make sure its up!
       //here is a video in the opencv installation folder!
       //String streamAddr = "C:\\Users\\simon\\Downloads\\opencv2411\\opencv\\sources\\samples\\gpu\\768x576.avi";
-      
-      
-      
+            
       System.out.println("Stream Opened");
       Mat img = new Mat();
       Mat out = new Mat();
-      Mat histim = new Mat(256,256, CvType.CV_8UC3);
+      Mat histim = new Mat(ROW, COLUMN, CvType.CV_8UC3);
       int i=1;
       while (true) 
       {
@@ -70,6 +70,12 @@ public class OringInspection
     	  System.out.println(imageName);          
           img = Highgui.imread(imageName);
           int [] h = hist(img);
+          drawHist(histim,h);
+         
+          int total = img.rows()*img.cols()*img.channels();
+          System.out.println("total = "+ total);
+          int threshold = CalcThreshold.calc(h, total);
+          System.out.println("threshold= "+ threshold);
           
           //calculate the mean processing time per frame and display it
           double before = (double)System.nanoTime()/1000000000;//secs
@@ -77,15 +83,10 @@ public class OringInspection
           //convert to greyscale
           Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
           
+          applyThreshold(img,threshold);
           
-          drawHist(histim,h);
+          printImageMatrix(img);
           
-          int threshold = calcThreshold(h);
-          
-          //threshold the image
-          int t=120;  // not used any longer as we calculate threshold just above
-          
-          threshold(img,threshold);
           //openCV version
           //Imgproc.threshold(img, img, 100, 255, Imgproc.THRESH_BINARY);
           //convert to colour so we can put text into the image using whatever colour we want!
@@ -99,26 +100,38 @@ public class OringInspection
           frame.pack();
           i++;
           try {
-			Thread.sleep(2000);
+			Thread.sleep(2500);
           } catch (InterruptedException e) {
 			e.printStackTrace();
           }
       }
-   }
-   
-   /**
-    * Calculates threshold from histogram
-    * @param h
-    * @return
-    */
-   private static int calcThreshold(int[] h) {
-	   
-	   
+   }   
+ 
+private static void printImageMatrix(Mat img) {	
 	
-	return 120;
+	for(int i=0; i<ROW; i++){
+		for(int j=0; j<COLUMN; j++){
+			double[] pixel = img.get(i, j);
+//			System.out.println("size of pixel in channels " + pixel.length);
+			for (double d: pixel){
+				int a= 0;
+				if (d == 255.0){
+					a = 1;
+				} else if (d == 0.0){
+					a = 0;
+				} else {
+					a = -1;
+				}
+				System.out.print(a + " ");
+			}
+			System.out.print("\t");
+		}
+		System.out.println();
+	}
+	
 }
 
-public static void threshold(Mat img, int t)
+public static void applyThreshold(Mat img, int t)
    {
 	   /* threshold the image (img), note here that we need to do an
 	    * & with 0xff. this is because Java uses signed two's complement
@@ -141,7 +154,9 @@ public static void threshold(Mat img, int t)
    public static int [] hist(Mat img)
    {
 	   int hist [] = new int[256];
-	   byte data[] = new byte[img.rows()*img.cols()*img.channels()];
+	   int sourceDataSize = img.rows()*img.cols()*img.channels();
+	   System.out.println("sourceDataSize = "+ sourceDataSize);
+	   byte data[] = new byte[sourceDataSize];
 	   img.get(0, 0, data);
 	   for (int i=0;i<data.length;i++)
 	   {
@@ -158,7 +173,7 @@ public static void threshold(Mat img, int t)
 	   {
 		   if(hist[i] > max)
 			   max = hist[i];
-		   System.out.print(hist[i]  + " ");
+//		   System.out.print(hist[i]  + " ");
 	   }
 	   System.out.println();
 	   int scale = max/256;
