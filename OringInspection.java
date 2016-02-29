@@ -43,6 +43,7 @@ public class OringInspection {
       frame.pack();
       frame.setVisible(true);
       
+      
       //press Q to quit application
       frame.addKeyListener(new KeyListener() {
     		public void keyPressed(KeyEvent arg0) {
@@ -85,7 +86,20 @@ public class OringInspection {
           
           applyThreshold(img,threshold);
           
-          printImageMatrix(img);
+          //printImageMatrix(img);
+          
+          
+          int erosion_size = 3;
+          int dilation_size = 5;
+          
+          Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new  Size(2*erosion_size + 1, 2*erosion_size+1));
+          Imgproc.erode(img, img, element);
+          
+          Mat element1 = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new  Size(2*dilation_size + 1, 2*dilation_size+1));
+          Imgproc.dilate(img, img, element1);
+          
+          
+          
           
           //openCV version
           //Imgproc.threshold(img, img, 100, 255, Imgproc.THRESH_BINARY);
