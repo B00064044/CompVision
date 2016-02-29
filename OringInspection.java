@@ -9,6 +9,7 @@
  */
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -70,12 +71,12 @@ public class OringInspection {
     	  String imageName = "C:\\Users\\lialka\\Desktop\\CompVision\\Rings image\\Oring" + (i%15) + ".jpg";
     	  System.out.println(imageName);          
           img = Highgui.imread(imageName);
-          int [] h = hist(img);
-          drawHist(histim,h);
+          int [] histogram = hist(img);
+          drawHist(histim,histogram);
          
           int total = img.rows()*img.cols()*img.channels();
           System.out.println("total = "+ total);
-          int threshold = CalcThreshold.calc(h, total);
+          int threshold = CalcThreshold.calc(histogram, total);
           System.out.println("threshold= "+ threshold);
           
           //calculate the mean processing time per frame and display it
@@ -88,18 +89,19 @@ public class OringInspection {
           
           //printImageMatrix(img);
           
+          int dilation_size = 3;
+          int erosion_size = 3; 
           
-          int erosion_size = 3;
-          int dilation_size = 5;
-          
+          // erosion
           Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new  Size(2*erosion_size + 1, 2*erosion_size+1));
           Imgproc.erode(img, img, element);
           
+          // dilation
           Mat element1 = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new  Size(2*dilation_size + 1, 2*dilation_size+1));
           Imgproc.dilate(img, img, element1);
           
           
-          
+          boolean pass = analyseRing(img);
           
           //openCV version
           //Imgproc.threshold(img, img, 100, 255, Imgproc.THRESH_BINARY);
@@ -121,6 +123,8 @@ public class OringInspection {
       }
    }   
  
+
+
 private static void printImageMatrix(Mat img) {	
 	
 	for(int i=0; i<ROW; i++){
@@ -220,6 +224,46 @@ public static void applyThreshold(Mat img, int t)
 	    return image;
 
 	}
+   
+   private static boolean analyseRing(Mat img) {
+	   findRegions(img);
+	   // analyze regions
+		
+		return false;
+	}
+   
+    private static void findRegions(Mat img){
+    	int[] pixels = getPixelsFromMat(img);
+    	// return regions
+    	ConnectComponent cc = new ConnectComponent();
+    	cc.compactLabeling(pixels, new Dimension(ROW, COLUMN), true);
+    	cc.
+    	
+    }
+   
+    private static int[] getPixelsFromMat(Mat m){
+    	byte [] pixels = new byte[ ROW * COLUMN ];
+    	m.get(0,0,pixels);
+    	// transform byte[] to int[]
+    	int[] p = new int[pixels.length];
+    	for (int i=0; i< pixels.length; i++){
+    		p[i] = pixels[i];
+    	}  
+    	printArray(p);
+    	
+    	return p;    	
+    }
+    
+    private static void printArray(int[] arr){
+    	System.out.println("Printing array of length "+ arr.length);
+    	for (int i=0; i< arr.length; i++){
+    		if (i < 1000){
+    			System.out.print(arr[i]);
+    		}
+    		
+    	}
+    	//System.out.println();
+    }
 
 	
 }
